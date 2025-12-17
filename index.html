@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Literacy Teacher Reference Guide</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #F8FAFC; color: #334155; }
+        .chart-container { position: relative; width: 100%; height: 200px; }
+        .card-transition { transition: all 0.3s ease-in-out; }
+        .card-transition:hover { transform: translateY(-4px); box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); }
+        .toggle-checkbox:checked { right: 0; border-color: #4F46E5; }
+        .toggle-checkbox:checked + .toggle-label { background-color: #4F46E5; }
+        
+        /* Custom Scrollbar for internal panels */
+        .scroller::-webkit-scrollbar { width: 6px; }
+        .scroller::-webkit-scrollbar-track { background: #f1f1f1; }
+        .scroller::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+        .scroller::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+    </style>
+    <!-- Chosen Palette: Clean Professional (Inter UI) -->
+    <!-- Primary: Slate/Indigo for authority and clarity. -->
+    <!-- Accents: 
+         Conceptual: Blue (#3B82F6)
+         Critical: Rose (#E11D48)
+         Creative: Amber (#D97706)
+    -->
+    
+    <!-- Application Structure Plan:
+         1. **Hero & Spiral Context**: Explains the "Spiral" nature (Recognition -> Interaction -> Architecture).
+         2. **Phase Controller**: A global toggle switch (Primary Y2-Y6 <-> Secondary Y7-Y9) that updates all content below.
+         3. **Competency Dashboard**: Three main columns for the literacies.
+            - Each column contains "Concept Cards".
+            - Text inside updates based on the Phase Controller.
+            - "Classroom Question" is a reveal interaction.
+         4. **Curriculum Analytics**: A Chart.js visualization showing the balance of activities across the framework.
+         5. **Link Explorer**: A filtered list of specific curriculum activities mentioned in the source.
+    -->
+    
+    <!-- Visualization & Content Choices:
+         1. **Curriculum Balance Chart (Doughnut)**: 
+            - Goal: Show the distribution of activities (Conceptual vs Critical vs Creative).
+            - Source: Count of links in the "Curriculum Links" sections.
+            - Justification: Quick visual audit of the curriculum's coverage.
+         2. **Spiral Progress Steps (CSS/HTML)**:
+            - Goal: Visualize the 3 stages mentioned in "Teacher's Note".
+            - Interaction: Click stages to set the Phase Controller.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+</head>
+<body class="min-h-screen flex flex-col">
+
+    <!-- Header -->
+    <header class="bg-white border-b border-gray-200 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="h-8 w-8 bg-indigo-600 rounded-lg flex items-center justify-center text-white font-bold">AI</div>
+                <h1 class="text-xl font-bold text-gray-900">Teacher Reference Guide</h1>
+            </div>
+            <div class="flex items-center gap-4 text-sm text-gray-500">
+                <span class="hidden md:inline">Competency Framework</span>
+                <span class="h-4 w-px bg-gray-300 hidden md:inline"></span>
+                <span>Spiral Curriculum</span>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full space-y-8">
+
+        <!-- Intro & Spiral Context -->
+        <section class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 md:p-8">
+            <div class="md:flex md:items-start md:justify-between gap-8">
+                <div class="md:w-2/3">
+                    <h2 class="text-2xl font-bold text-gray-900 mb-2">The Spiral Curriculum Model</h2>
+                    <p class="text-gray-600 mb-6">
+                        Concepts are not taught once; they are revisited with increasing complexity. 
+                        Use the interactive controller below to switch between teaching phases.
+                    </p>
+                    
+                    <!-- Spiral Visualizer Steps -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div onclick="setPhase('primary')" class="cursor-pointer group relative border-l-4 border-teal-500 bg-teal-50 p-4 rounded-r-lg hover:bg-teal-100 transition-colors">
+                            <h3 class="font-bold text-teal-900 text-sm uppercase tracking-wide">Phase 1: Recognition</h3>
+                            <p class="text-xs text-teal-700 mt-1">"Is this AI?"</p>
+                            <p class="text-xs text-gray-500 mt-2 font-mono">Years 2-3</p>
+                        </div>
+                        <div onclick="setPhase('primary')" class="cursor-pointer group relative border-l-4 border-blue-500 bg-blue-50 p-4 rounded-r-lg hover:bg-blue-100 transition-colors">
+                            <h3 class="font-bold text-blue-900 text-sm uppercase tracking-wide">Phase 2: Interaction</h3>
+                            <p class="text-xs text-blue-700 mt-1">"Inputs & Outputs"</p>
+                            <p class="text-xs text-gray-500 mt-2 font-mono">Years 4-6</p>
+                        </div>
+                        <div onclick="setPhase('secondary')" class="cursor-pointer group relative border-l-4 border-indigo-500 bg-indigo-50 p-4 rounded-r-lg hover:bg-indigo-100 transition-colors">
+                            <h3 class="font-bold text-indigo-900 text-sm uppercase tracking-wide">Phase 3: Architecture</h3>
+                            <p class="text-xs text-indigo-700 mt-1">"Weights & Biases"</p>
+                            <p class="text-xs text-gray-500 mt-2 font-mono">Years 7-9</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Phase Controller Toggle -->
+                <div class="md:w-1/3 bg-gray-50 rounded-xl p-6 flex flex-col items-center justify-center border border-gray-200 mt-6 md:mt-0">
+                    <span class="text-sm font-semibold text-gray-500 mb-3 uppercase tracking-wider">Current Teaching View</span>
+                    <div class="relative inline-block w-64 select-none transition duration-200 ease-in">
+                        <div class="flex bg-white rounded-lg border border-gray-300 p-1 shadow-inner">
+                            <button id="btn-primary" onclick="setPhase('primary')" class="w-1/2 text-center py-2 rounded-md text-sm font-bold transition-all bg-indigo-600 text-white shadow-sm">
+                                Primary (Y2-Y6)
+                            </button>
+                            <button id="btn-secondary" onclick="setPhase('secondary')" class="w-1/2 text-center py-2 rounded-md text-sm font-bold transition-all text-gray-500 hover:text-gray-900">
+                                Secondary (Y7-Y9)
+                            </button>
+                        </div>
+                    </div>
+                    <p id="phase-desc" class="text-xs text-center text-gray-500 mt-3 h-4">
+                        Focus: Recognition & Basic Interaction
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Competency Columns -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            
+            <!-- COLUMN 1: CONCEPTUAL -->
+            <section class="flex flex-col space-y-4">
+                <div class="bg-blue-600 text-white p-4 rounded-t-xl shadow-sm">
+                    <h2 class="text-lg font-bold flex items-center gap-2">
+                        <span class="text-2xl">⚙️</span> Conceptual Literacy
+                    </h2>
+                    <p class="text-blue-100 text-xs mt-1">The "Know" - Mechanics & Math</p>
+                </div>
+                <div class="bg-white border-x border-b border-gray-200 rounded-b-xl p-4 space-y-4 shadow-sm h-full" id="col-conceptual">
+                    <!-- Dynamic Content Injected Here -->
+                </div>
+            </section>
+
+            <!-- COLUMN 2: CRITICAL -->
+            <section class="flex flex-col space-y-4">
+                <div class="bg-rose-600 text-white p-4 rounded-t-xl shadow-sm">
+                    <h2 class="text-lg font-bold flex items-center gap-2">
+                        <span class="text-2xl">⚖️</span> Critical Literacy
+                    </h2>
+                    <p class="text-rose-100 text-xs mt-1">The "Evaluate" - Ethics & Bias</p>
+                </div>
+                <div class="bg-white border-x border-b border-gray-200 rounded-b-xl p-4 space-y-4 shadow-sm h-full" id="col-critical">
+                    <!-- Dynamic Content Injected Here -->
+                </div>
+            </section>
+
+            <!-- COLUMN 3: CREATIVE -->
+            <section class="flex flex-col space-y-4">
+                <div class="bg-amber-600 text-white p-4 rounded-t-xl shadow-sm">
+                    <h2 class="text-lg font-bold flex items-center gap-2">
+                        <span class="text-2xl">🎨</span> Creative Literacy
+                    </h2>
+                    <p class="text-amber-100 text-xs mt-1">The "Do" - Co-creation & Design</p>
+                </div>
+                <div class="bg-white border-x border-b border-gray-200 rounded-b-xl p-4 space-y-4 shadow-sm h-full" id="col-creative">
+                    <!-- Dynamic Content Injected Here -->
+                </div>
+            </section>
+
+        </div>
+
+        <!-- Curriculum Analytics & Links -->
+        <section class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Chart -->
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                <h3 class="text-sm font-bold text-gray-900 uppercase tracking-wide mb-4">Curriculum Activity Balance</h3>
+                <div class="chart-container">
+                    <canvas id="balanceChart"></canvas>
+                </div>
+                <p class="text-xs text-gray-500 text-center mt-2">Distribution of core activities in the spiral curriculum.</p>
+            </div>
+
+            <!-- Links List -->
+            <div class="lg:col-span-2 bg-white rounded-xl shadow-sm border border-gray-200 p-6 flex flex-col">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-sm font-bold text-gray-900 uppercase tracking-wide">Relevant Curriculum Links</h3>
+                    <span id="link-count" class="bg-gray-100 text-gray-600 py-1 px-2 rounded text-xs font-mono">10 Activities</span>
+                </div>
+                <div class="flex-grow scroller overflow-y-auto max-h-48">
+                    <ul id="curriculum-links" class="space-y-2">
+                        <!-- Links injected here -->
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="bg-white border-t border-gray-200 mt-12 py-8">
+        <div class="max-w-7xl mx-auto px-4 text-center text-sm text-gray-500">
+            <p>Based on the AI Literacy Competency Framework. Designed for Spiral Progression.</p>
+        </div>
+    </footer>
+
+    <!-- JS Logic -->
+    <script>
+        // --- DATA SOURCE ---
+        const frameworkData = {
+            conceptual: {
+                color: "blue",
+                def: "Understanding the technical mechanics of AI. Moving students from 'It's magic' to 'It's math'.",
+                concepts: [
+                    { 
+                        title: "Nature of AI", 
+                        primary: "<strong>Recognition & Rules:</strong> Distinguishing between a 'rule-based' toaster and an 'intelligent' agent. Understanding inputs (sensors) and outputs.",
+                        secondary: "<strong>Probabilities & Thresholds:</strong> Understanding AI decisions are not 'Yes/No' but '87% confident'. Coding confidence thresholds in Python.",
+                        question: "Does this machine follow a fixed rule, or does it guess?"
+                    },
+                    { 
+                        title: "Data Logic", 
+                        primary: "<strong>Classification:</strong> How computers sort data into groups (e.g., 'Cats vs. Dogs'). The concept of 'Training Data'.",
+                        secondary: "<strong>The Data Pipeline:</strong> The full lifecycle: Collection → Cleaning → Labelling → Training → Testing.",
+                        question: "How did the computer learn to recognize this? Who taught it?"
+                    },
+                    { 
+                        title: "Learning Models", 
+                        primary: "<strong>Supervised Learning:</strong> Humans labelling data to teach the machine.",
+                        secondary: "<strong>Neural Networks & Unsupervised Learning:</strong> How systems cluster data without labels (e.g., Recommendation Engines).",
+                        question: "If we show it 100 pictures of apples, what happens if we show it a banana?"
+                    },
+                    { 
+                        title: "Generative AI", 
+                        primary: "<strong>Next-Token Prediction:</strong> Understanding LLMs predict the probable next word, they don't 'know' facts.",
+                        secondary: "<strong>Vector Space & Embeddings:</strong> How words are turned into numbers (vectors) to find mathematical similarities.",
+                        question: "Is the AI 'thinking', or is it just predicting the next word?"
+                    }
+                ],
+                links: [
+                    { text: "Y2: Is it a Robot?", phase: "primary" },
+                    { text: "Y3: The Sorting Hat", phase: "primary" },
+                    { text: "Y5: The Next Word Game", phase: "primary" },
+                    { text: "Y8: Python & The Algorithm", phase: "secondary" }
+                ]
+            },
+            critical: {
+                color: "rose",
+                def: "Evaluating the reliability, ethics, and societal impact of AI. Empowering students to question the machine.",
+                concepts: [
+                    { 
+                        title: "Bias & Fairness", 
+                        primary: "<strong>Dataset Bias:</strong> Understanding that if data is missing (e.g., no dark skin tones), the AI will fail for those people.",
+                        secondary: "<strong>Systemic & Representation Bias:</strong> Auditing models for fairness. Echo Chambers and algorithmic radicalization.",
+                        question: "Who is this AI missing out? Is it fair for everyone?"
+                    },
+                    { 
+                        title: "Reliability", 
+                        primary: "<strong>Hallucinations:</strong> Recognizing that AI makes things up confidently. 'Garbage In, Garbage Out'.",
+                        secondary: "<strong>Deepfakes & Forensics:</strong> Analyzing artifacts in media (lighting, pupils) to detect synthetic media.",
+                        question: "Why might the AI be wrong even if it sounds confident?"
+                    },
+                    { 
+                        title: "Ethics & Safety", 
+                        primary: "<strong>Privacy & Empathy:</strong> Digital assistants listening; treating bots with respect vs. anthropomorphising them.",
+                        secondary: "<strong>Alignment & Environment:</strong> The 'Paperclip Maximiser' problem (Goal Alignment). Carbon footprint of training.",
+                        question: "Just because we CAN build it, SHOULD we?"
+                    },
+                    { 
+                        title: "Human Role", 
+                        primary: "<strong>The User:</strong> Knowing when to trust the tool and when to override it.",
+                        secondary: "<strong>The Auditor:</strong> Actively testing systems to find their breaking points.",
+                        question: "Where is the human in this process?"
+                    }
+                ],
+                links: [
+                    { text: "Y4: Garbage In, Garbage Out", phase: "primary" },
+                    { text: "Y7: The Bias Hunter", phase: "secondary" },
+                    { text: "Y9: The Future of Intelligence", phase: "secondary" }
+                ]
+            },
+            creative: {
+                color: "amber",
+                def: "Using AI tools effectively to co-create, solve problems, and build new systems. Moving from consumers to architects.",
+                concepts: [
+                    { 
+                        title: "Co-Creation", 
+                        primary: "<strong>Augmentation:</strong> Using AI to generate ideas, images, or music that the student then refines.",
+                        secondary: "<strong>Integration:</strong> Using AI as a component (API) within a larger software project or app.",
+                        question: "How did the AI help you improve your original idea?"
+                    },
+                    { 
+                        title: "Prompting", 
+                        primary: "<strong>Structure:</strong> Learning the formula: Context + Instruction + Constraint.",
+                        secondary: "<strong>Prompt Engineering for Code:</strong> Using AI to generate HTML/CSS/Python and—crucially—debugging the result.",
+                        question: "How do I change my instructions to get a better result?"
+                    },
+                    { 
+                        title: "Design Thinking", 
+                        primary: "<strong>Prototyping:</strong> Using AI to quickly visualize a concept (e.g., 'Smart Bedroom').",
+                        secondary: "<strong>System Design:</strong> Designing the logic flow of an app that uses AI responsibly (e.g., Recycling Tracker).",
+                        question: "What problem are we solving, and is AI the right tool?"
+                    }
+                ],
+                links: [
+                    { text: "Y2: Teaching the Computer (Quick Draw)", phase: "primary" },
+                    { text: "Y5: Prompt Engineering 101", phase: "primary" },
+                    { text: "Y9: AI Integration Project", phase: "secondary" }
+                ]
+            }
+        };
+
+        // --- STATE ---
+        let currentPhase = 'primary'; // 'primary' or 'secondary'
+
+        // --- RENDER FUNCTIONS ---
+        
+        function setPhase(phase) {
+            currentPhase = phase;
+            
+            // Update UI Toggles
+            const btnPrimary = document.getElementById('btn-primary');
+            const btnSecondary = document.getElementById('btn-secondary');
+            const desc = document.getElementById('phase-desc');
+
+            if (phase === 'primary') {
+                btnPrimary.className = "w-1/2 text-center py-2 rounded-md text-sm font-bold transition-all bg-indigo-600 text-white shadow-sm";
+                btnSecondary.className = "w-1/2 text-center py-2 rounded-md text-sm font-bold transition-all text-gray-500 hover:text-gray-900";
+                desc.innerText = "Focus: Recognition, Rules & Basic Interaction (Y2-Y6)";
+            } else {
+                btnSecondary.className = "w-1/2 text-center py-2 rounded-md text-sm font-bold transition-all bg-indigo-600 text-white shadow-sm";
+                btnPrimary.className = "w-1/2 text-center py-2 rounded-md text-sm font-bold transition-all text-gray-500 hover:text-gray-900";
+                desc.innerText = "Focus: Internal Architecture, Systems & Probability (Y7-Y9)";
+            }
+
+            renderCompetencies();
+            renderLinks();
+        }
+
+        function renderCompetencies() {
+            renderColumn('conceptual', 'col-conceptual');
+            renderColumn('critical', 'col-critical');
+            renderColumn('creative', 'col-creative');
+        }
+
+        function renderColumn(key, elemId) {
+            const data = frameworkData[key];
+            const container = document.getElementById(elemId);
+            container.innerHTML = `<p class="text-sm text-gray-600 italic border-b border-gray-100 pb-2 mb-2">${data.def}</p>`;
+
+            data.concepts.forEach((concept, index) => {
+                const content = currentPhase === 'primary' ? concept.primary : concept.secondary;
+                const card = document.createElement('div');
+                card.className = "bg-gray-50 rounded-lg p-3 border border-gray-200 card-transition";
+                card.innerHTML = `
+                    <h4 class="font-bold text-gray-800 text-sm mb-2 border-l-2 border-${data.color}-500 pl-2">${concept.title}</h4>
+                    <p class="text-sm text-gray-700 leading-relaxed">${content}</p>
+                    <div class="mt-3 pt-2 border-t border-gray-200">
+                        <button onclick="toggleQuestion('${key}-${index}')" class="text-xs font-semibold text-${data.color}-600 hover:text-${data.color}-800 flex items-center gap-1 focus:outline-none">
+                            <span id="icon-${key}-${index}">❓</span> Ask the Class
+                        </button>
+                        <p id="q-${key}-${index}" class="hidden mt-2 text-xs font-medium text-gray-800 bg-white p-2 rounded shadow-sm border border-gray-100 italic">
+                            "${concept.question}"
+                        </p>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function toggleQuestion(id) {
+            const el = document.getElementById(`q-${id}`);
+            const icon = document.getElementById(`icon-${id}`);
+            if (el.classList.contains('hidden')) {
+                el.classList.remove('hidden');
+                el.classList.add('block');
+                icon.innerText = "🗣️";
+            } else {
+                el.classList.add('hidden');
+                el.classList.remove('block');
+                icon.innerText = "❓";
+            }
+        }
+
+        function renderLinks() {
+            const list = document.getElementById('curriculum-links');
+            list.innerHTML = '';
+            
+            let allLinks = [];
+            ['conceptual', 'critical', 'creative'].forEach(key => {
+                frameworkData[key].links.forEach(l => {
+                    // Filter: show links that match current phase
+                    // Primary shows Y2-Y6, Secondary shows Y7-Y9
+                    const isYPrimary = l.text.includes('Y2') || l.text.includes('Y3') || l.text.includes('Y4') || l.text.includes('Y5') || l.text.includes('Y6');
+                    const isYSecondary = l.text.includes('Y7') || l.text.includes('Y8') || l.text.includes('Y9');
+
+                    if ((currentPhase === 'primary' && isYPrimary) || (currentPhase === 'secondary' && isYSecondary)) {
+                         // Determine badge color
+                        let badgeColor = key === 'conceptual' ? 'bg-blue-100 text-blue-800' : 
+                                         key === 'critical' ? 'bg-rose-100 text-rose-800' : 'bg-amber-100 text-amber-800';
+                        
+                        // Create list item
+                        const li = document.createElement('li');
+                        li.className = "flex items-center justify-between bg-gray-50 p-2 rounded border border-gray-100 hover:bg-white transition-colors";
+                        li.innerHTML = `
+                            <span class="text-sm font-medium text-gray-700">${l.text}</span>
+                            <span class="text-xs px-2 py-0.5 rounded-full ${badgeColor} capitalize">${key}</span>
+                        `;
+                        list.appendChild(li);
+                    }
+                });
+            });
+
+            document.getElementById('link-count').innerText = `${list.children.length} Activities Found`;
+        }
+
+        // --- CHART ---
+        function initChart() {
+            const ctx = document.getElementById('balanceChart').getContext('2d');
+            
+            // Calculate totals from data
+            const c1 = frameworkData.conceptual.links.length;
+            const c2 = frameworkData.critical.links.length;
+            const c3 = frameworkData.creative.links.length;
+
+            new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Conceptual', 'Critical', 'Creative'],
+                    datasets: [{
+                        data: [c1, c2, c3],
+                        backgroundColor: ['#3B82F6', '#E11D48', '#D97706'],
+                        borderWidth: 0,
+                        hoverOffset: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'bottom', labels: { usePointStyle: true, boxWidth: 8 } }
+                    },
+                    cutout: '70%'
+                }
+            });
+        }
+
+        // --- INIT ---
+        document.addEventListener('DOMContentLoaded', () => {
+            setPhase('primary');
+            initChart();
+        });
+
+    </script>
+</body>
+</html>
